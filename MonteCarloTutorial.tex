@@ -1,0 +1,416 @@
+%IIT, May 23, 2016
+\documentclass[10pt,compress,xcolor={usenames,dvipsnames}]{beamer} %slides and notes
+\usepackage{amsmath,datetime,xmpmulti,mathtools,bbm,array,booktabs,alltt,xspace,mathabx,pifont,tikz,graphicx}
+\usepackage[author-year]{amsrefs}
+\usepackage{newpxtext}
+\usepackage[euler-digits,euler-hat-accent]{eulervm}\usetikzlibrary{arrows}
+\usepackage[autolinebreaks]{mcodefred}
+\usetheme{FJHSlim}
+
+\setlength{\parskip}{2ex}
+\setlength{\arraycolsep}{0.5ex}
+
+%\logo{\includegraphics[width=0.5cm]{IIT_mark_1c_red.eps}}
+\logo{\includegraphics[width=0.5cm]{MengerIITRedGray.pdf}}
+
+\title[(Quasi-)Monte Carlo Methods]{Monte Carlo and Quasi-Monte Carlo Methods}
+\author{Fred J. Hickernell}
+\institute{Department of Applied Mathematics,  Illinois Institute of Technology \\
+	\href{mailto:hickernell@iit.edu}{\nolinkurl{hickernell@iit.edu}} \quad
+	\href{http://mypages.iit.edu/~hickernell}{\nolinkurl{mypages.iit.edu/~hickernell}}}
+\date{Summer 2016}
+
+
+
+\input FJHDef.tex
+\DeclareSymbolFont{greekletters}{OML}{cmr}{m}{it}
+\DeclareMathSymbol{\varrho}{\mathalpha}{greekletters}{"25}
+\newcommand{\smallcite}[1]{{\small\cite{#1}}}
+\newcommand{\smallocite}[1]{{\small\ocite{#1}}}
+\DeclareMathOperator{\MSE}{mse}
+\newcommand{\HickernellFJ}{H.} %To give my name to the bibliography
+\newcommand{\abstol}{\varepsilon_{\text{a}}}
+\newcommand{\reltol}{\varepsilon_{\text{r}}}
+\newcommand{\vPsi}{\boldsymbol{\Psi}}
+
+\newcommand{\medcone}{\parbox{1.2cm}{\includegraphics[width=0.55cm,angle=270]{ProgramsImages/MediumWaffleCone.eps}}\xspace}
+
+\newcommand{\smallcone}{\parbox{0.65cm}{\includegraphics[width=0.3cm,angle=270]{ProgramsImages/MediumWaffleCone.eps}}\xspace}
+
+\newcommand{\lecone}{\smallcone\hspace*{-0.3cm}\mathclap{\le}\hspace*{0.35cm}}
+
+\definecolor{MATLABBlue}{rgb}{0, 0.447, 0.741}
+\definecolor{MATLABOrange}{rgb}{0.85,  0.325, 0.098}
+\definecolor{MATLABPurple}{rgb}{0.494,  0.184, 0.556}
+\definecolor{MATLABGreen}{rgb}{0.466,  0.674, 0.188}
+
+\begin{document}
+\tikzstyle{every picture}+=[remember picture]
+\everymath{\displaystyle}
+
+\frame{\titlepage}
+
+\section{Motivation}
+\begin{frame}
+\frametitle{Algorithms with Random Numbers}
+\begin{tabular}{>{\raggedright}m{6cm}>{\centering}m{5cm}}
+These concepts build upon probability from a calculus-based perspective, such as that provided in the first 7 chapters of \cite{WalEtal07a}. 
+\newline \newline
+Some mathematical problems can be solved using algorithms (computational procedures) that use random numbers.  These are called \beamerbutton{\href{http://en.wikipedia.org/wiki/Monte_Carlo_method}{Monte Carlo Methods}}
+\newline \newline
+The MATLAB script \mcode{MonteCarloAvgDistPts.m} provides an example of a Monte Carlo method. 
+&
+\includegraphics[width=4cm]{ProgramsImages/WalpoleMyersMyersYe2011StatText.jpg}
+\end{tabular}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Why Do We Need Monte Carlo Methods?}
+\vspace{-2ex}
+Monte Carlo methods are used for problems that can be formulated as finding 
+\[
+\left . \begin{array}{r}\text{average distance between points} \\ 
+\text{option price} \\ 
+\text{probability of a system failure} \\ 
+\text{intensity of a pixel} \end{array} \right \}
+\mu := \Ex(Y), \quad Y\left \{ \begin{array}{l}\text{distance between 2  points} \\
+\text{option payoff} \\ 
+\text{a system failure or not, } \\ 
+\text{intensity of an incident ray} \end{array} \right .
+\]
+where $Y$ is a \beamerbutton{\href{http://en.wikipedia.org/wiki/Random_variable}{random variable}} with a \alert{complicated} \beamerbutton{\href{http://en.wikipedia.org/wiki/Probability_distribution}{distribution}}.  This means that
+\begin{multline*}
+\mu := \begin{Bmatrix}\displaystyle
+\sum_{y \in \Omega} y \, \omega(y) \\[3ex]
+\displaystyle
+\int_{\Omega} y \, \omega(y) \, \dif y 
+\end{Bmatrix},
+\text{where $Y$ is a}
+\begin{Bmatrix}
+\text{discrete} \\
+\text{continuous}
+\end{Bmatrix}
+\text{random variable and} \\[-3ex]
+\omega \text{ is the probability}
+\begin{Bmatrix}
+\text{mass} \\
+\text{density}
+\end{Bmatrix}
+\text{function, i.e., }\Prob(Y \le y) = 
+\begin{Bmatrix}\displaystyle
+\sum_{y' \le y} \omega(y') \\[3ex]
+\displaystyle
+\int_{y' \le y} \omega(y') \, \dif y' 
+\end{Bmatrix},
+\end{multline*}
+is too difficult to evaluate analytically because $\omega$ is too complex.  Here $\Omega \subseteq \reals$ is the \beamerbutton{\href{http://en.wikipedia.org/wiki/Sample_space}{sample space}}  of $Y$---the set of all possible values for $Y$.  
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Why Do We Need Monte Carlo Methods?}
+
+Monte Carlo methods are used for problems that can be formulated as finding 
+\[
+\mu := \Ex(Y)
+\]
+where $Y$ is a random variable with a \alert{complicated distribution}.  Often 
+\[
+Y :=f(\vX), \qquad f: \Xi \to \Omega,
+\]
+where $\vX$ is a $d$-dimensional random vector with sample space $\Xi \subseteq \reals^d$ and a relatively simple distribution, such as, uniform or Gaussian.  But still, we have
+\begin{equation*}
+\mu = \begin{Bmatrix}\displaystyle
+\sum_{\vx \in \Xi} f(\vx) \, \varrho(\vx) \\[3ex]
+\displaystyle
+\int_{\Xi} f(\vx)\, \varrho(\vx) \, \dif \vx
+\end{Bmatrix}
+\text{where } \varrho \text{ is the probability}
+\begin{Bmatrix}
+\text{mass} \\
+\text{density}
+\end{Bmatrix}
+\text{function of }\vX,
+\end{equation*}
+which is too difficult to perform analytically because $f$ is too complex.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Ex.\ Average Distance Between Two Points on a Square}
+In the example in  \mcode{MonteCarloAvgDistPts.m} we have
+\begin{multline*}
+Y = \text{distance between points} = f(\vX) := \sqrt{(X_1-X_3)^2 + (X_2-X_4)^2}, \\ \vX \sim \cu[0,1]^4,
+\end{multline*}
+so $\Xi := [0,1]^4$, $\varrho(\vx):=1$, and 
+\[
+\text{mean distance} = \mu := \int_{\Xi} f(\vx)\, \varrho(\vx) \, \dif \vx = \int_{[0,1]^4} \sqrt{(x_1-x_3)^2 + (x_2-x_4)^2}\,  \dif \vx.
+\]
+\end{frame}
+
+
+\section{Monte Carlo Basics}
+\begin{frame}
+\frametitle{The Monte Carlo Approach}
+Monte Carlo methods approximate the \beamerbutton{\href{http://en.wikipedia.org/wiki/Mean}{true or population mean}} by a  \beamerbutton{\href{http://en.wikipedia.org/wiki/Sample_mean_and_sample_covariance}{sample mean}}
+\[
+\mu := \Ex(Y) \approx \hmu_n = \frac{1}{n} \sum_{i=1}^n Y_i,
+\]
+where $Y_1, Y_2, \ldots$ are \alert{samples} of the random variable $Y$.
+
+If the $Y_i$ are random with the same distribution as $Y$, then $\hmu_n$ is an \beamerbutton{\href{http://en.wikipedia.org/wiki/Bias_of_an_estimator}{unbiased estimator}} of $\mu$, which means that
+\[
+\Ex(\hmu_n) = \Ex\left(\frac{1}{n} \sum_{i=1}^n Y_i \right) =  \frac{1}{n} \sum_{i=1}^n \Ex(Y_i)= \frac{1}{n} \sum_{i=1}^n \mu = \mu.
+\]
+The answer changes each time a different sample is used, but on average you get the correct answer.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Monte Carlo Mean Squared Error}
+%\vspace{-6ex}
+\[
+\mu := \Ex(Y) \approx \hmu_n = \frac{1}{n} \sum_{i=1}^n Y_i,
+\]
+How close $\hmu_n$ is to $\hmu_n$ is measured by 
+\[
+\MSE(\hmu_n) := \Ex[(\mu-\hmu_n)^2]  = \var(\hmu_n) = \var\left(\frac{1}{n} \sum_{i=1}^n Y_i \right) =  \frac{1}{n^2} \sum_{i=1}^n \var(Y_i)= \frac{\var(Y)}{n},
+\]
+provided that $Y_1, Y_2, \ldots $ are independent and identically distributed (IID) with same distribution as $Y$.  As the sample size, $n$, increases, the error goes decreases like $\Order(1/\sqrt{n})$.
+
+But this characterization of the error is too crude. 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Highly Likely Upper Bound on the Monte Carlo Error}
+\vspace{-5ex}
+\[
+ \Ex[(\mu-\hmu_n)^2]  = \var(\hmu_n) = \frac{\var(Y)}{n}, \qquad Y_1, Y_2, \ldots \text{ IID } \sim Y.
+\]
+But this characterization of the error is too crude.  Sometimes users appeal to the \beamerbutton{\href{http://en.wikipedia.org/wiki/Central_limit_theorem}{Central Limit Theorem}}, which implies that
+\[
+\Prob\left[\abs{\mu-\hmu_n} \le \frac{2.58 \hsigma_n}{\sqrt{n}}\right] \approx 99\% \quad \text{for } n \to \infty
+\]
+where $\hsigma_n$ is the sample variance
+\[
+\hsigma_n^2 = \frac{1}{n-1} \sum_{i=1}^n (Y_i - \hmu_n)^2.
+\]
+Given an absolute error tolerance, $\abstol$, one might choose 
+\[
+n = \left \lceil \left (\frac{2.58 \times \alert{1.2} \times \hsigma_{n_\sigma}}{\abstol} \right )^2 \right \rceil \quad \text{to hope for} \quad \Prob\left[\abs{\mu-\hmu_n} \le \abstol \right] \ge 99\%
+\]
+See \mcode{meanMC\_CLT}.  But there is no guarantee that this will hold.  See \mcode{CLTAvgDistPts.m}.
+
+\end{frame}
+
+\section{GAIL}
+\begin{frame}
+\frametitle{Guaranteed Automatic Integration Library (GAIL)}
+\vspace{-4ex}
+Monte Carlo algorithms with guarantees are provided in GAIL.  See \mcode{GAILAvgDistPts.m} for a demonstration.
+
+The GAIL algorithms most closely related to this summer project are listed below.  The theories behind these algorithms are nontrivial.
+\begin{itemize}
+\item \mcode{tmu=meanMC\_g(Yrand,abstol,reltol,alpha)}---finds \mcode{tmu}$\approx \mu:=\Ex(Y)$ with $\Prob[\abs{\mu - \mcode{tmu}} \le \max(\mcode{abstol},\mcode{reltol}\abs{\mu})] \le 1 - \mcode{alpha}$  given \mcode{Yrand}, a function for generating IID instances of $Y$  \cite{HicEtal14a}.
+
+\item \mcode{tmu=cubMC_g(f,hyperbox,measure,abstol,reltol,alpha)}---finds \mcode{tmu}$\approx \mu:=\Ex[f(\vX)]$ with $\Prob[\abs{\mu - \mcode{tmu}} \le \max(\mcode{abstol},\mcode{reltol}\abs{\mu})] \le 1 - \mcode{alpha}$  given \mcode{f}, where \mcode{hyperbox} is the sample space of $\vX$, and \mcode{measure} is the measure for $\vX$  \cite{HicEtal14a}.
+
+\item \mcode{cubSobol\_g} and \mcode{cubLattice\_g}---perform a similar function to \mcode{cubMC_g}, but using more evenly placed values of $\vX_i$ \cite{HicJim16a,JimHic16a}.  These are called quasi-Monte Carlo methods.
+\end{itemize}
+
+\end{frame}
+
+\section{(Quasi-)Monte Carlo Integration}
+\begin{frame}
+\frametitle{Importance Sampling}
+Suppose that one has a multivariate integral of the form 
+\[
+\mu = \int_{\reals^d} g(\vz) \, \dif \vz
+\]
+We might interpret $\mu$ as some mean, but this is not necessary.  Suppose that $\vX$ is a random variable defined on $\reals^d$ with probability density function $\varrho$.   Then,
+\begin{align*}
+\mu &= \int_{\reals^d} \frac{g(\vz)}{\varrho(\vz)} \, \varrho(\vz) \, \dif \vz \\
+& = \int_{\reals^d} f(\vx) \, \varrho(\vx) \, \dif \vx, \qquad f(\vx):= \frac{g(\vx)}{\varrho(\vx)}, \quad \vx \in \reals^d, \\
+& = \Ex[f(\vX)] \approx \hmu_n = \frac 1n \sum_{i=1}^n f(\vX_i).
+\end{align*}
+This works well if $f$ does not vary too much, and if $\varrho(\vx)$ does not vanish unless $g(\vx)$ also vanishes at the same $\vx$.  Note that there are many possible choices of $\varrho$.  The choice of $\varrho$ is called importance sampling---\alert{sampling more where it matters}.  See \mcode{ImportanceSamplingEx.m}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Variable Transformation}
+Consider multivariate integral of the form 
+\begin{multline*}
+\mu :=  \int_{\Xi} f(\vx) \, w(\vx) \dif \vx  =  \int_{\Xi} f(\vx) \, \varrho(\vx) \dif \vx \int_{\Xi} w(\vx) \, \dif \vx =    \Ex(f(\vX)) \int_{\Xi} w(\vx) \, \dif \vx  \\
+\approx \hmu_n \int_{\Xi} w(\vx) \, \dif \vx, \\  
+\text{where }\hmu_n = \frac 1n \sum_{i=1}^n f(\vX_i), \
+\Xi \subseteq \reals^d, \ w : \Xi \to [0,\infty), \
+\varrho(\vx) = \frac{w(\vx)}{\displaystyle \int_{\Xi} w(\vx) \, \dif \vx}, \text{ and } \vX \sim \varrho.
+\end{multline*}
+
+Suppose that it is \alert{awkward to generate} $\vX$ with probability density $\varrho$ on $\Xi$, say because $\Xi$ is not a box.  
+We want to make a transformation to a new random variable . 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Variable Transformation}
+\[
+\mu :=  \int_{\Xi} f(\vx) \, w(\vx) \dif \vx, \qquad w:\Xi \to [0,\infty),\quad \Xi \subseteq \reals^d,
+\]
+If you can find another random variable $\vT$ with probability density $\gamma$ on $\Gamma$, which is \alert{easy to generate} and also find some transformation $\vPsi:\Gamma \to \Xi$, then letting 
+\[
+v(\vt) = \abs{\left(\frac{\partial \Psi_i}{\partial t_j} \right)_{i,j=1}^d} \frac{ w(\vPsi(\vt))}{\gamma(\vt)}
+\]
+implies 
+\begin{multline*}
+\mu  := \int_{\Xi} f(\vx) \, w(\vx) \dif \vx = \int_{\Gamma} f(\vPsi(\vt)) \, \abs{\left(\frac{\partial \Psi_i}{\partial t_j} \right)_{i,j=1}^d} \, w(\vPsi(\vt)) \, \dif \vt \\
+= \int_{\Gamma} f(\vPsi(\vt)) \, v(\vt)  \, \gamma(\vt) \, \dif \vt = \Ex[f(\vT)v(\vT)].
+\end{multline*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Uniform Points on a Disk}
+\vspace{-3ex}
+Suppose that one has a multivariate integral of the form 
+\[
+\mu :=  \int_{\Xi} f(\vx) \, \dif \vx = \pi \Ex(f(\vX)),  \qquad \vX \sim \cu(\Xi), \ \Xi = \{(x,y) : x^2 + y^2 =1\}.
+\]
+Generating $\vX$ is  awkward.  Consider the transformation
+\begin{gather*}
+\vPsi(\vt) = \begin{pmatrix} \sqrt{t_1} \cos(2\pi t_2) \\ \sqrt{t_1} \sin(2\pi t_2) \end{pmatrix}, \quad \vt \in \Gamma = [0,1]^2,\\
+\abs{\left(\frac{\partial \Psi_i}{\partial t_j} \right)_{i,j=1}^d} = \begin{vmatrix} \displaystyle \frac{\cos(2 \pi t_2)}{2\sqrt{t_1}}  & -2 \pi \sqrt{t_1} \sin(2 \pi t_2) \\ \displaystyle \frac{\sin(2 \pi t_2)}{2\sqrt{t_1}}  & 2 \pi \sqrt{t_1} \cos(2 \pi t_2) \end{vmatrix} = \pi.
+\end{gather*}
+Therefore we get
+\begin{equation*}
+\mu  = \int_{\Xi} f(\vx) \, \dif \vx = \int_{[0,1]^2} f(\vPsi(\vt)) \, \pi \,  \dif \vt = \Ex[f(\vPsi(\vT))],
+\end{equation*}
+which is easier to handle by (quasi-)Monte Carlo methods.  See \mcode{VariableTransformationEx.m}
+\end{frame}
+
+\begin{frame}
+\frametitle{Variable Transformation Resources}
+The two books below have helpful chapters on making variable transformations:
+\begin{tabular}{>{\centering}m{5cm}@{\qquad}>{\centering}m{5cm}}
+\includegraphics[width=3.5cm]{ProgramsImages/NTMinStatisticsFangKT.jpg} &
+\includegraphics[width=4cm]{ProgramsImages/DevroyeNon-UniformRVGeneration.jpg}
+\tabularnewline
+\ocite{FanWan94} & \ocite{Dev86} \beamerbutton{\href{http://www.eirene.de/Devroye.pdf}{pdf here}}
+\end{tabular}
+\end{frame}
+
+
+\section{Research Problems}
+
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Lots of problems can be written as finding $\mu = \Ex(Y) = \Ex[f(\vX)]$.  We solve them by computing $\displaystyle \hmu_n = \frac 1n \sum_{i=1}^n Y_i = \frac{1}{n} \sum_{i=1}^n  f(\vX_i)$.  But \ldots
+\begin{itemize} 
+\item How big should $n$ be to attain the desired error tolerance?
+\end{itemize}
+
+\item The GAIL routines \mcode{meanMC_g}, \mcode{cubMC_g}, \mcode{cubSobol_g}, and \mcode{cubLattice_g} provide the answer where the $Y_i$ are IID sampled or the $\vX_i$ are IID or low discrepancy sampled on a box with a simple distribution.  But \ldots
+\begin{itemize} 
+\item Can we make this more accessible to others?
+
+\item Can we make this more efficient?
+
+\item What can we do for more complicated distributions of $\vX$?
+
+\item What about $\vX_i$ generated on regions other than a box?
+
+\item And how well does  this theory work on some practical problems?
+\end{itemize}
+
+
+\end{itemize}
+\end{frame}
+\begin{frame}[allowframebreaks]
+\frametitle{Possible Summer Research Problems}
+
+\begin{itemize}
+\item Port GAIL routines to R, Python, Julia, or C (up to 6 students).  R is used by many statisticians.  Some work in R by last year's students and some work on C by Tony.
+\begin{description}
+\item[First job.] Port \mcode{meanMC_CLT} and \mcode{CLTAvgDistPts.m} to one of these languages.  Consider using Jupyter.
+\item[Next jobs.] Check out previous ports of \mcode{meanMC_g} and \mcode{cubSobol_g} to R.  Enhance as needed.
+\newline Port these routines to other languages.
+\newline Test performance of various languages.
+\end{description}
+
+\item Develop versions of GAIL routines that take advantage of multiple cores using the Parallel Computing Toolbox (1--2 students).  
+\begin{description}
+\item[First job.] Develop an example using \mcode{meanMC_CLT} and \mcode{CLTAvgDistPts.m}.
+\item[Next jobs.] Develop a parallel version of \mcode{meanMC_g} (minus its bells and whistles).
+\end{description}
+
+\pagebreak
+
+\item Develop a class \mcode{integrationLattice} that generates another kind of evenly spread points than the Sobol' sequence (class \mcode{sobolset}), which is already built into MATLAB. The beginnings are already in the GAIL function \mcode{lattice_gen} (1-2 students, see Tony Jim\'enez Rugama).
+\begin{description}
+\item[First jobs.] Replace \mcode{lattice_gen} by a class.
+\item[Next jobs.] Write methods like \mcode{rand} and \mcode{qrand}.
+\end{description}
+
+
+\item Develop the class \mcode{variableTransform} that can generate uniform points on different elementary shapes such as balls, spheres, and simplices (1--2 students). 
+\begin{description}
+\item[First jobs.] Add IID uniform points on a $d$-dimensional box.  \newline Add IID points on a 3-dimensional ball by transforming points from the 3-dimensional cube.
+\item[Next jobs.] Add uniform IID points on a $d$-dimensional ball. \newline Explore which transformation methods work better. \newline
+Add uniform IID points on spheres and simplices.
+\end{description}
+
+\pagebreak
+
+\item Generalize \mcode{cubMC_g}, \mcode{cubSobol_g}, \mcode{cubLattice_g}, to handle integrals over other regions (1--2 students).
+\begin{description}
+\item[First job.] Perform integrals over the disk.
+\item[Next jobs.]  Explore which transformation methods work better. 
+\end{description}
+
+
+\item Explore adaptive importance sampling, i.e., choosing an the importance sampling function automatically without user input (1--2 students).  Some work done by last year's students.
+\begin{description}
+\item[First job.] Try a family of Gaussian distributions with different means and/or variances.
+\item[Next job.] Consider the ideas in \ocite{OweZho00a}.
+\end{description}
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{References}
+\bibliography{FJH23,FJHown23}
+\end{frame}
+
+\end{document}
+
+
+
+\begin{frame} \frametitle{Further Work to Be Done}
+
+\begin{itemize}
+
+\item $Y \in \{0, 1\}$, i.e., Bernoulli random variables \smallcite{JiaHic16a} \\[2ex]
+
+\item Control variates (subtle for quasi-Monte Carlo  \smallcite{HicEtal03}) \\[2ex]
+
+\item Adaptive importance sampling \\[2ex]
+
+\item Multilevel and related methods for $\infty$-dimensional problems \\[2ex]
+
+\item Markov Chain Monte Carlo \\[2ex]
+
+\item Porting to R and other languages
+
+
+\end{itemize}
+\end{frame}
+
+
