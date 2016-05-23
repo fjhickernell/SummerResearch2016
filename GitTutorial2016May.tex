@@ -1,0 +1,279 @@
+%Git Tutorial for Summer 2016 Research 
+\documentclass[12pt, compress,xcolor={usenames,dvipsnames}]{beamer} %slides and notes
+\usepackage{amsmath,datetime,xmpmulti,mathtools,bbm,array,booktabs,alltt,xspace,mathabx,pifont,tikz,graphicx}
+\usepackage[autolinebreaks]{mcodefred}
+\usetikzlibrary{arrows}
+\usetheme{FJHSlim}
+
+%\setlength{\parskip}{2ex}
+\setlength{\arraycolsep}{0.5ex}
+
+\input FJHDef.tex
+\newcommand{\Matlab}{MATLAB\xspace}
+
+
+
+
+\begin{document}
+	\tikzstyle{every picture}+=[remember picture]
+	\everymath{\displaystyle}
+	
+	\title[Illinois Institute of Technology]{Git (Global Information Tracker) Tutorial}
+	\author[Fred J. Hickernell]{Fred J. Hickernell}
+	\date[May 23, 2016]{May 23, 2016}
+	\frame[label=title]{\titlepage}
+	
+	
+\section{Features}
+	\begin{frame}\frametitle{Git's Features}
+		
+		\vspace{-3ex}
+		
+		\begin{itemize}
+						
+			\item Git is an open source protocol for \alert{source (version) control management} of text files, such as programs and articles.
+			
+			\item It facilitates
+			
+			\begin{itemize}
+				\item A \alert{record of changes} so that one may go back to earlier versions,
+				
+				\item \alert{Collaborative} authorship, where multiple people can be editing at the same time and those changes are successfully merged, and
+				
+				\item A method for \alert{resolving conflicts} if inconsistent changes are made simultaneously.
+			\end{itemize}
+			
+			\item Copies of the repository (all the files in the same big group) are \alert{distributed} in multiple locations that update each other.  There is typically one remote repository that contains the nearly latest copy.
+			 
+			
+		\end{itemize}
+		
+	\end{frame}
+	
+	\begin{frame}\frametitle{Git's Features}
+
+		\vspace{-3ex}
+		
+		\begin{itemize}
+						
+			\item Documents may be
+			
+			\begin{description}
+				\item[Untracked] Existing only on your local copy, but not in other copies of the repository,
+				
+				\item [Edited] Being changed, but not yet ready to go further,
+				
+				\item[Staged] Ready to become official,
+				
+				\item[Committed] An official part of your local copy of the repository, but not yet a part of the remote repository.
+				
+				\item[Pushed] Pushed to the remote copy(ies) of the repository, say on GitHub or Bitbucket.  
+			\end{description}
+			
+			\item The repository may split into \alert{branches} that can also be merged again so that one group can work on something without disturbing others.
+			
+			
+		\end{itemize}
+		
+	\end{frame}
+
+\section{Set-Up}
+
+\begin{frame}\frametitle{To Get Started \ldots}
+	
+	\vspace{-4ex}
+
+\begin{itemize}
+	
+	\item Create an account for yourself at the GitHub remote repository \href{http://github.com}{\nolinkurl{github.com}}.
+	
+	\item Download the Git client SourceTree client application at \href{http://sourcetreeapp.com}{\nolinkurl{sourcetreeapp.com}}.
+	
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}\frametitle{Setting Up SourceTree}
+	
+	\vspace{-4ex}
+	
+	\begin{itemize}
+				
+		\item Open the Preferences pane in SourceTree and add your name, email address, and preferred folder for saving copies of repositories.
+		
+		\includegraphics[width =11cm]{ProgramsImages/SourceTreePreferences.png}
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}\frametitle{Setting Up SourceTree}
+	
+	\vspace{-4ex}
+	
+	\begin{itemize}
+		
+		\item Chose \texttt{Window} $\rightarrow$ \texttt{Show Repository Browser} and then click the little wheel in the top right corner.  Add your GitHub account credentials.
+		
+		\includegraphics[width =11cm]{ProgramsImages/SourcTreeRepositoryBrowserSettings.png}
+	\end{itemize}
+	
+\end{frame}
+
+\section{Cloning}
+
+\begin{frame}\frametitle{Cloning an Existing Repository}
+	
+	To get a copy of an existing repository (on some remote)
+	
+	\begin{itemize}
+		
+		\item Chose \texttt{File} $\rightarrow$ \texttt{New/Clone} $\rightarrow$ \texttt{Clone from URL}.
+		
+		\item Type in \href{http://github.com/fjhickernell/GitHubTutorial.git}{\nolinkurl{http://github.com/fjhickernell/GitHubTutorial.git}}, which is a repository that I have set up for this tutorial.
+		
+	\end{itemize}
+	
+	Now you should see in the directory that you created on your own machine the file \texttt{SampleMFile.m}.
+	
+	Open this file and run it in \Matlab.
+	
+\end{frame}
+
+\section{Changes}
+
+\begin{frame}\frametitle{Editing Files in a  Repository}
+	
+	\emph{For this next part I will do it myself because you are not collaborators and cannot push changes to my repository.}
+	
+	\begin{itemize}
+		
+		\item After making some changes to a file, I see that is \alert{Uncommitted Changes} appear.
+		
+		\item To make these changes a part of the repository record, I need to \alert{Stage}, \alert{Commit}, and \alert{Push}.
+		
+	\end{itemize}
+	
+	
+\end{frame}
+
+\section{New Repository}
+
+\begin{frame}\frametitle{Creating a New Repository}
+		
+	\begin{itemize}
+		
+		\item To create your own repository in your own account choose  \texttt{File} $\rightarrow$ \texttt{New/Clone} $\rightarrow$ \texttt{Create Remote Repository}.
+		
+		\item Enter the name of the repository that you want to create.
+		
+		\item Find that repository on the Repository Browser.
+		
+		\item Clone a copy to your local machine.
+		
+		\item Create a new text file or \Matlab program in your local machine.
+		
+		\item \alert{Stage}, \alert{Commit}, and \alert{Push} it to your remote repository.
+		
+	\end{itemize}
+	
+\end{frame}
+
+\section{Collaborators}
+
+\begin{frame}\frametitle{Adding Collaborators}
+			
+	
+	No one can write to your remote repository unless they are added as a collaborator.  
+	
+	\begin{itemize}
+		
+		\item Go to your GitHub account and choose your new repository.
+		
+		\item  Choose \texttt{Settings}
+		
+		\includegraphics[width = 11cm]{ProgramsImages/GitHubRemoteRepository.png}
+				
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}\frametitle{Adding Collaborators}
+	\vspace{-4ex}
+	
+	\begin{itemize}
+		
+		
+		\item The choose \texttt{Collaborators} and add a partner to your repository.
+		
+		\includegraphics[width = 11cm]{ProgramsImages/GitHubRemoteCollaborators}
+		
+		\item Now have your partner clone your repository, edit your file, and push it back to the repository.
+		
+		\item (You should now have at least three repositories:  mine, yours, and your partners.)
+		
+		
+	\end{itemize}
+	
+\end{frame}
+
+\section{Conflicts}
+
+\begin{frame}\frametitle{Resolving Conflicts}
+	\vspace{-4ex}
+	
+	\begin{itemize}
+		
+		
+		\item Now, arrange for you and your partner to change the same line of one of your files, and both of you push the changes.  You should get a \alert{conflict}.
+		
+		\item The one that got the conflict warning should not choose \texttt{Actions} $\rightarrow$ \texttt{Resolve Conflicts} $\rightarrow$ \texttt{Launch External Merge Tool}.
+		
+		\item After resolving the conflict by choosing the left or right \alert{save} your merge, \alert{quit} the File Merge application, and \alert{Commit} the result.
+				
+		
+	\end{itemize}
+	
+\end{frame}
+
+\section{More}
+
+\begin{frame}\frametitle{Reminders}
+	
+	\begin{itemize}
+		
+		
+		\item Git is better than Dropbox or Google Drive because it keeps track of changes and smoothly handles changes by multiple people at the same time.
+		
+		
+		\item Because Git only stores changes, it is best for text files, not binary files.  
+		
+		\item Git-LFS \href{https://git-lfs.github.com}{\nolinkurl{git-lfs.github.com}}  is a way to track binary and other large files.  It takes a bit to set up but is supported by the SourceTree application.  
+		
+		
+		
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}\frametitle{Further Topics}
+	If there is time we may talk about
+	
+	\begin{itemize}
+		
+		
+		\item Going back to an earlier place
+		
+		\item Feature Branches
+		
+		
+		
+	\end{itemize}
+	
+\end{frame}
+
+
+\end{document}
+
+
+

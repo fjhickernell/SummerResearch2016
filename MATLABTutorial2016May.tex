@@ -1,0 +1,186 @@
+%MATLAB Tutorial for Summer 2016 Research 
+\documentclass[12pt, compress,xcolor={usenames,dvipsnames}]{beamer} %slides and notes
+\usepackage{amsmath,datetime,xmpmulti,mathtools,bbm,array,booktabs,alltt,xspace,mathabx,pifont,tikz,graphicx}
+\usepackage[autolinebreaks]{mcodefred}
+\usetikzlibrary{arrows}
+\usetheme{FJHSlim}
+
+%\setlength{\parskip}{2ex}
+\setlength{\arraycolsep}{0.5ex}
+
+\input FJHDef.tex
+\newcommand{\Matlab}{MATLAB\xspace}
+
+
+
+
+\begin{document}
+	\tikzstyle{every picture}+=[remember picture]
+	\everymath{\displaystyle}
+	
+	\title[Illinois Institute of Technology]{\Matlab (MATrix LABoratory) Tutorial}
+	\author[Fred J. Hickernell]{Fred J. Hickernell}
+	\date[May 23, 2016]{May 23, 2016}
+	\frame[label=title]{\titlepage}
+	
+	\section{Features}
+	\begin{frame}\frametitle{\Matlab's Features}
+		
+		\centerline{\includegraphics[width = 11.7cm]{ProgramsImages/MATLABScreenShot.png}}
+		\begin{itemize}
+						
+			\item All variables are arrays (vectors, matrices, \ldots) by default
+			
+			\item Operators and functions take matrix inputs
+			
+			\item Variables need not be declared
+			
+			\item Help and documentation available
+			
+			\item Command window
+			
+			\item Editor for writing scripts (programs) and functions
+			
+			\item Object-oriented (you can define your own classes)
+			
+			\item Scripts can be published as nicely looking pdf or html files
+			
+		\end{itemize}
+		
+	\end{frame}
+
+\section{Commands}
+	
+\begin{frame}[fragile]\frametitle{Basic Commands in the Command Window}
+\begin{alltt}
+>> x = 3:9 %set x to be a vector of inputs
+x =
+     3     4     5     6     7     8     9
+>> x(4:6) %display the 4th through 6th elements
+ans =
+    6     7     8
+>> y = [-2 3 4 6 13 14 16] %a vector of outputs
+y =
+    -2     3     4     6    13    14    16
+>> plot(x,y,'-','linewidth',3) %connected by line segments
+>> plot(x,y,'.k','markersize',30) %plot points as dots
+\end{alltt}
+\end{frame}
+
+\section{Scripts}
+
+\begin{frame}[fragile]\frametitle{Commands in a Script for Safekeeping and Reuse}
+	\vspace{-8ex}
+\lstinputlisting[linerange = {1-15}]{ProgramsImages/FittingData.m}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Commands in a Script for Safekeeping and Reuse}
+	\vspace{-8ex}
+	\lstinputlisting[linerange = {17-25}]{ProgramsImages/FittingData.m}
+\end{frame}
+
+\section{Functions}
+	
+\begin{frame}[fragile]\frametitle{A Function Can Be Called in Other Programs}
+	\vspace{-8ex}
+	\lstinputlisting[linerange = {1-10}]{ProgramsImages/dataFit.m}	
+\end{frame}
+	
+\begin{frame}[fragile]\frametitle{A Function Can Be Called in Other Programs}
+	\vspace{-8ex}
+	\lstinputlisting[firstline = 12]{ProgramsImages/dataFit.m}	
+\end{frame}
+
+
+\section{Classes}
+
+\begin{frame}[fragile]\frametitle{Every \Matlab Variable Belongs to a Class}
+	\begin{alltt}
+		>> A = [1 2; 3 4]
+		A =
+		1     2
+		3     4
+		>> fred = 'elaine'
+		fred =
+		elaine
+		>> Hartur = \{'Brazil','Olympics'\}
+		Hartur = 
+		'Brazil'    'Olympics'
+			\end{alltt}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Every \Matlab Variable Belongs to a Class}
+	\vspace{-5ex}
+	\begin{alltt}
+		>> whos
+		Name        Size            Bytes  Class     Attributes
+		
+		A           2x2                32  double              
+		Hartur      1x2               252  cell                
+		fred        1x6                12  char                
+	\end{alltt}
+	In \Matlab you may define your \alert{own} classes.
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{A Class Has Properties}
+	\vspace{-8ex}
+	\lstinputlisting[linerange = {1-12}]{ProgramsImages/dataFitClass.m}	
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{A Class Has Methods}
+	\vspace{-8ex}
+	\lstinputlisting[linerange = {14-26}]{ProgramsImages/dataFitClass.m}	
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{A Class Has Methods}
+	\vspace{-8ex}
+	\lstinputlisting[linerange = {28-36}]{ProgramsImages/dataFitClass.m}	
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{A Class Has Methods}
+	\vspace{-8ex}
+	\lstinputlisting[linerange = {38-49}]{ProgramsImages/dataFitClass.m}	
+\end{frame}
+
+\section{bsxfun}
+
+\begin{frame}{\texttt{bsxfun}}
+	\vspace{-4ex}
+	Supose that you have a row vectors, \mcode{x}, and you want to make the matrix \mcode{A = (a_ij) = (x_i^j)}.  The function \mcode{bsxfun} does this quickly:
+	\vspace{-2ex}
+	\lstinputlisting[linerange = {27-34}]{ProgramsImages/FittingData.m}
+\end{frame}
+
+\section{Publishing}
+
+\begin{frame}{Publishing \Matlab Scripts}
+		The \mcode{publish} command in \Matlab generates html (or pdf) files from \Matlab scripts that have a beautiful appearance.  Try 
+		
+		\bigskip
+		
+		\mcode{publish FittingData}
+		
+		\bigskip
+		
+		Then look at the file \texttt{FittingData.html} in the \texttt{html} folder.
+		
+\end{frame}
+
+\section{Resources}
+
+\begin{frame}{Resources}
+	Check out the \Matlab Tutorials at \beamerbutton{\href{http://www.mathworks.com/academia/student_center/tutorials/mltutorial_launchpad.html}{Mathworks \Matlab Tutorials}}
+	
+	
+	\bigskip
+	
+	Come to the \alert{Advanced \Matlab Tutorial} here at 9 AM, tomorrow, Tuesday, May 24.
+	
+\end{frame}
+
+
+\end{document}
+
+
+
