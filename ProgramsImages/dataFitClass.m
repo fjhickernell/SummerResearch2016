@@ -8,7 +8,7 @@ classdef dataFitClass
    
    properties (Dependent) %these properties are dependent on the input
       n %number of elements
-      yfit %coefficient of the regression line
+      yfit %fitted regression line
    end
       
    methods

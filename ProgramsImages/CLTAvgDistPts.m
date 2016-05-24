@@ -48,7 +48,7 @@ tic, meandist = meanMC_CLT(distfun,0.02), toc
 % Unfortunately, |meanMC_CLT| does not have solid theoretical support.
 % E.g. consider the example
 
-a=1e2; % a parameter
+a=1e3; % a parameter
 Y = @(n) randn(n,1) + a*(a*rand(n,1)<1); %a mixture distribution with mean 1
 for i=1:4
    tic, muhat = meanMC_CLT(Y,0.01), toc %try out multiple times with tolerance 0.01
