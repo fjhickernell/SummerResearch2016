@@ -44,7 +44,7 @@ xIIDSquare = genPaths(unifIIDWhiteNoise,5) % generate 5 more samples from the ob
 % Let's plot 128 of these points
 
 xIIDSquare = genPaths(unifIIDWhiteNoise,128);
-plot(xIIDSquare(:,1),xIIDSquare(:,2),'b.')
+plot(xIIDSquare(:,1),xIIDSquare(:,2),'.')
 
 %%
 % We may also construct a class where the input is the x values and we
@@ -62,7 +62,29 @@ xSobolSquare = genPaths(unifSobolWhiteNoise,xsob)
 
 xsob = net(scramble(sobolset(2),'MatousekAffineOwen'),128);
 xSobolSquare = genPaths(unifSobolWhiteNoise,xsob);
-plot(xSobolSquare(:,1),xSobolSquare(:,2),'b.')
+plot(xSobolSquare(:,1),xSobolSquare(:,2),'.')
+
+%% Non-Uniform Points
+% Sometimes we want points that emulate other distributions that are not
+% uniform.  For the Gaussian (normal) distribution, this is already
+% included.  First we show IID Gaussian points
+
+GaussIIDWhiteNoise = whiteNoise(unifIIDWhiteNoise); %make a copy of the IID White Noise
+GaussIIDWhiteNoise.wnParam.distribName = 'Gaussian'; %change the distribution from Uniform to Gaussian
+GaussIIDWhiteNoise.wnParam.xDistrib = 'Gaussian' %change the original distribution to Gaussian, i.e., randn will be used
+xIIDGauss = genPaths(GaussIIDWhiteNoise,128);
+plot(xIIDGauss(:,1),xIIDGauss(:,2),'.')
+
+%% 
+% Next we will use plot Gaussian points from a Sobol sequence.
+
+GaussSobolWhiteNoise = whiteNoise(unifSobolWhiteNoise);
+GaussSobolWhiteNoise.wnParam.distribName = 'Gaussian' %change the distribution from Uniform to Gaussian
+xSobolGauss = genPaths(GaussSobolWhiteNoise,xsob);
+plot(xSobolGauss(:,1),xSobolGauss(:,2),'.')
+
+%%
+% Can you see that the Sobol' points look more even?
 
 %% Generating points on other shapes
 % The methods above construct points on certain boxes.  What if we want to
@@ -73,7 +95,7 @@ clear inp % clear the variable inp to start over
 inp.timeDim.nSteps = 2; %two columns
 unifIIDCircle = variableTransform(inp) %construct an instance of the class
 xIIDCircle = genVTPoints(unifIIDCircle,128);
-plot(xIIDCircle(:,1),xIIDCircle(:,2),'b.',cos((0:0.002:2*pi)')', ...
+plot(xIIDCircle(:,1),xIIDCircle(:,2),'.',cos((0:0.002:2*pi)')', ...
    sin((0:0.002:2*pi)')','k--')
 axis('square')
 

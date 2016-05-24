@@ -26,13 +26,13 @@ tic, meandist = mean(distfun(1e6)), toc
 % \(Y_i\) approaches the Gaussian (or normal) distribution with mean $E(Y)$
 % and variance $\mbox{var}(Y)/n$.  This idea is behind the algorithm
 % |meanMC_CLT|
-
-type meanMC_CLT
+%
+% <include>meanMC_CLT.m</include>
 
 %% 
 % We may use this algorithm to find a fixed-width confidence interval
 
-tic, meandist = meanMC_CLT(distfun,0.02), toc
+tic, meandist = meanMC_CLT(distfun,0.02), toc %absolute error tolerance = 0.02
 
 %%
 % Note that the time required by |meanMC_CLT| is less than that required by
@@ -48,21 +48,21 @@ tic, meandist = meanMC_CLT(distfun,0.02), toc
 % Unfortunately, |meanMC_CLT| does not have solid theoretical support.
 % E.g. consider the example
 
-a=1e3; % a parameter
+a=300; % a parameter
 Y = @(n) randn(n,1) + a*(a*rand(n,1)<1); %a mixture distribution with mean 1
-for i=1:4
-   tic, muhat = meanMC_CLT(Y,0.01), toc %try out multiple times with tolerance 0.01
+for i=1:10
+   tic, muhat = meanMC_CLT(Y,0.01,0,0.01,100), toc %try out multiple times with absolute tolerance 0.01
 end
 
 %%
-% Note that the answers \(\pm\) 0.01 do not overlap.  Thus, they must be
-% wrong. The problem is that the number of samples used to estimate the
-% variance (default = 100) is too small for this distribution with a large
+% Note that the answers \(\pm\) 0.01 do not overlap.  Thus, some of them
+% must be wrong. The problem is that the number of samples used to estimate
+% the variance (100) is too small for this distribution with a large
 % kurtosis. If we increase the number of samples used to estimate the
 % variance to 10000, then the answers are correct.
 
-for i=1:4
-   tic, muhat = meanMC_CLT(Y,0.01,0.01,10000), toc %try out multiple times with tolerance 0.01
+for i=1:10
+   tic, muhat = meanMC_CLT(Y,0.01,0,0.01,10000), toc %try out multiple times with tolerance 0.01
 end
 
 %%
